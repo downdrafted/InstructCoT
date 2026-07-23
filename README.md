@@ -3,13 +3,13 @@
 Reference implementation for:
 
 > **InstructCoT: Bridging Instruction Tuning and Chain-of-Thought Reasoning for Scalable Vision-Language Models**
-> Eunsung You, Sangyup Oh — IEEE BigDataService 2026, Fukuoka, Japan (Paper ID 0305)
+> Eunsung You, Sangyup Oh, IEEE BigDataService 2026, Fukuoka, Japan (Paper ID 0305)
 
 InstructCoT combines three modules on top of an existing vision-language model (VLM):
 
-- **AIS** (Adaptive Instruction Selector) — estimates per-sample difficulty from predictive entropy and routes each example to one of three instruction-detail tiers.
-- **ICA** (Instruction-Conditioned Attention) — a lightweight, gated cross-attention block that conditions visual features directly on the selected instruction.
-- **PCC** (Progressive CoT Curriculum) — a three-stage training schedule that gradually increases reasoning supervision from direct answers → short rationales → full grounding/reasoning/synthesis chain-of-thought.
+- **AIS** (Adaptive Instruction Selector): estimates per-sample difficulty from predictive entropy and routes each example to one of three instruction-detail tiers.
+- **ICA** (Instruction-Conditioned Attention): a lightweight, gated cross-attention block that conditions visual features directly on the selected instruction.
+- **PCC** (Progressive CoT Curriculum): a three-stage training schedule that gradually increases reasoning supervision from direct answers → short rationales → full grounding/reasoning/synthesis chain-of-thought.
 
 This repo contains the three modules, the data pipeline, and both a CPU "stub" path (for verifying the wiring with no GPU) and a real path (LLaVA-1.5 via `transformers`, 4-bit quantized).
 
@@ -18,7 +18,7 @@ This repo contains the three modules, the data pipeline, and both a CPU "stub" p
 | File | What it does |
 |---|---|
 | `ais.py` | Predictive-entropy scoring, threshold calibration (28th/72nd percentile, fixed once), instruction-level routing |
-| `ica.py` | The cross-attention module — visual features as query, instruction embedding as key/value, zero-initialized gated residual |
+| `ica.py` | The cross-attention module: visual features as query, instruction embedding as key/value, zero-initialized gated residual |
 | `pcc.py` | The three-phase curriculum scheduler and the composite training loss |
 | `dataset.py` | Adapters that normalize VQAv2, OK-VQA, ScienceQA, GQA, TextVQA, MMMU, MathVista, LLaVA-CoT-100K, and a local InstructCoT-200K JSONL into one common sample format |
 | `real_vlm.py` | Wires AIS/ICA/PCC onto an actual LLaVA-1.5 checkpoint in 4-bit via `transformers` + `bitsandbytes` |
@@ -26,7 +26,7 @@ This repo contains the three modules, the data pipeline, and both a CPU "stub" p
 | `infer_instructcot.py` | Inference: AIS routing + entropy-gated CoT-skipping at generation time |
 | `sample_data/sample.jsonl` | A 5-row example in the exact InstructCoT-200K schema, for a quick end-to-end smoke test with no external data or network access |
 
-Every file with training/inference logic has a **stub path** (a tiny synthetic CPU model, for verifying that AIS → ICA → PCC → loss → backward all run correctly) and a **real path** (an actual VLM on GPU). Stub runs print a `[smoke] ... PASSED` line ending in *"plumbing checks, not results"* — that phrasing is intentional: passing a stub smoke test confirms the code runs, not that it reproduces any accuracy number from the paper.
+Every file with training/inference logic has a **stub path** (a tiny synthetic CPU model, for verifying that AIS → ICA → PCC → loss → backward all run correctly) and a **real path** (an actual VLM on GPU). Stub runs print a `[smoke] ... PASSED` line ending in *"plumbing checks, not results"*: passing a stub smoke test confirms the code runs, not that it reproduces any accuracy number from the paper.
 
 ## Installation
 
@@ -41,11 +41,11 @@ pip install transformers bitsandbytes peft accelerate pillow
 pip install datasets
 ```
 
-The real path requires a CUDA GPU — `real_vlm.py` raises immediately if none is available.
+The real path requires a CUDA GPU. `real_vlm.py` raises immediately if none is available.
 
 ## Quickstart: CPU smoke test (no GPU, no network)
 
-Module-level checks — each file has its own self-check, no data required:
+Module-level checks; each file has its own self-check, no data required:
 
 ```bash
 python3 ais.py
@@ -96,12 +96,6 @@ python3 infer_instructcot.py \
 ```
 
 Set `HF_HOME` and, if working offline from a pre-downloaded cache, `HF_HUB_OFFLINE=1` for your own environment before running either command.
-
-## Status and limitations
-
-- This is research code released alongside the paper, not a packaged library — expect to read the source when adapting it to a new benchmark or model family.
-- Stub smoke tests verify the AIS → ICA → PCC → loss → backward pipeline executes correctly; they do **not** reproduce any accuracy number from the paper. Reproducing the paper's main results requires the full InstructCoT-200K corpus, a real VLM on GPU, and the full 2×2 factorial design across 5 random seeds, as described in the paper's Experimental Setup.
-- The inference-time CoT-skipping latency/accuracy trade-off reported in the paper is still being finalized between the authors — see the paper's Table 6 for the directly measured figures.
 
 ## Citation
 
