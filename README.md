@@ -1,9 +1,9 @@
 # InstructCoT
 
-Reference implementation for:
+Implementation for:
 
 > **InstructCoT: Bridging Instruction Tuning and Chain-of-Thought Reasoning for Scalable Vision-Language Models**
-> Eunsung You, Sangyup Oh, IEEE BigDataService 2026, Fukuoka, Japan (Paper ID 0305)
+> Eunsung You, Sangyup Oh, IEEE BigDataService 2026
 
 InstructCoT combines three modules on top of an existing vision-language model (VLM):
 
@@ -43,7 +43,7 @@ pip install datasets
 
 The real path requires a CUDA GPU. `real_vlm.py` raises immediately if none is available.
 
-## Quickstart: CPU smoke test (no GPU, no network)
+## Quickstart
 
 Module-level checks; each file has its own self-check, no data required:
 
